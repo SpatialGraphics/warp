@@ -32,6 +32,7 @@ import warp.build
 import warp.codegen
 import warp.config
 
+
 # represents either a built-in or user-defined function
 
 
@@ -94,40 +95,40 @@ def generate_unique_function_identifier(key):
 
 class Function:
     def __init__(
-        self,
-        func,
-        key,
-        namespace,
-        input_types=None,
-        value_type=None,
-        value_func=None,
-        export_func=None,
-        dispatch_func=None,
-        module=None,
-        variadic=False,
-        initializer_list_func=None,
-        export=False,
-        doc="",
-        group="",
-        hidden=False,
-        skip_replay=False,
-        missing_grad=False,
-        generic=False,
-        native_func=None,
-        defaults=None,
-        custom_replay_func=None,
-        native_snippet=None,
-        adj_native_snippet=None,
-        replay_snippet=None,
-        skip_forward_codegen=False,
-        skip_reverse_codegen=False,
-        custom_reverse_num_input_args=-1,
-        custom_reverse_mode=False,
-        overloaded_annotations=None,
-        code_transformers=None,
-        skip_adding_overload=False,
-        require_original_output_arg=False,
-        scope_locals=None,  # the locals() where the function is defined, used for overload management
+            self,
+            func,
+            key,
+            namespace,
+            input_types=None,
+            value_type=None,
+            value_func=None,
+            export_func=None,
+            dispatch_func=None,
+            module=None,
+            variadic=False,
+            initializer_list_func=None,
+            export=False,
+            doc="",
+            group="",
+            hidden=False,
+            skip_replay=False,
+            missing_grad=False,
+            generic=False,
+            native_func=None,
+            defaults=None,
+            custom_replay_func=None,
+            native_snippet=None,
+            adj_native_snippet=None,
+            replay_snippet=None,
+            skip_forward_codegen=False,
+            skip_reverse_codegen=False,
+            custom_reverse_num_input_args=-1,
+            custom_reverse_mode=False,
+            overloaded_annotations=None,
+            code_transformers=None,
+            skip_adding_overload=False,
+            require_original_output_arg=False,
+            scope_locals=None,  # the locals() where the function is defined, used for overload management
     ):
         if code_transformers is None:
             code_transformers = []
@@ -517,14 +518,14 @@ def call_builtin(func: Function, *params) -> Tuple[bool, Any]:
 
                 expected_elem_type = arg_type._wp_scalar_type_
                 if not (
-                    elem_type is expected_elem_type
-                    or (elem_type is float and expected_elem_type is warp.types.float32)
-                    or (elem_type is int and expected_elem_type is warp.types.int32)
-                    or (elem_type is bool and expected_elem_type is warp.types.bool)
-                    or (
-                        issubclass(elem_type, np.number)
-                        and warp.types.np_dtype_to_warp_type[np.dtype(elem_type)] is expected_elem_type
-                    )
+                        elem_type is expected_elem_type
+                        or (elem_type is float and expected_elem_type is warp.types.float32)
+                        or (elem_type is int and expected_elem_type is warp.types.int32)
+                        or (elem_type is bool and expected_elem_type is warp.types.bool)
+                        or (
+                                issubclass(elem_type, np.number)
+                                and warp.types.np_dtype_to_warp_type[np.dtype(elem_type)] is expected_elem_type
+                        )
                 ):
                     # The parameter value has a type not matching the type defined
                     # for the corresponding argument.
@@ -557,11 +558,11 @@ def call_builtin(func: Function, *params) -> Tuple[bool, Any]:
                 return (False, None)
 
             if not (
-                isinstance(param, arg_type)
-                or (type(param) is float and arg_type is warp.types.float32)  # noqa: E721
-                or (type(param) is int and arg_type is warp.types.int32)  # noqa: E721
-                or (type(param) is bool and arg_type is warp.types.bool)  # noqa: E721
-                or warp.types.np_dtype_to_warp_type.get(getattr(param, "dtype", None)) is arg_type
+                    isinstance(param, arg_type)
+                    or (type(param) is float and arg_type is warp.types.float32)  # noqa: E721
+                    or (type(param) is int and arg_type is warp.types.int32)  # noqa: E721
+                    or (type(param) is bool and arg_type is warp.types.bool)  # noqa: E721
+                    or warp.types.np_dtype_to_warp_type.get(getattr(param, "dtype", None)) is arg_type
             ):
                 return (False, None)
 
@@ -737,6 +738,17 @@ class Kernel:
         hash_suffix = self.hash.hex()[:8]
 
         return f"{self.key}_{hash_suffix}"
+
+    def get_hooks(self, device=None):
+        # if stream is specified, use the associated device
+        device = runtime.get_device(device)
+
+        # delay load modules, including new overload if needed
+        module_exec = self.module.load(device)
+        if not module_exec:
+            return
+
+        return module_exec.get_kernel_hooks(self)
 
 
 # ----------------------
@@ -1061,32 +1073,31 @@ def get_generic_vtypes():
 
 generic_vtypes = get_generic_vtypes()
 
-
 scalar_types = {}
 scalar_types.update({x: x for x in warp.types.scalar_types})
 scalar_types.update({x: x._wp_scalar_type_ for x in warp.types.vector_types})
 
 
 def add_builtin(
-    key,
-    input_types=None,
-    constraint=None,
-    value_type=None,
-    value_func=None,
-    export_func=None,
-    dispatch_func=None,
-    doc="",
-    namespace="wp::",
-    variadic=False,
-    initializer_list_func=None,
-    export=True,
-    group="Other",
-    hidden=False,
-    skip_replay=False,
-    missing_grad=False,
-    native_func=None,
-    defaults=None,
-    require_original_output_arg=False,
+        key,
+        input_types=None,
+        constraint=None,
+        value_type=None,
+        value_func=None,
+        export_func=None,
+        dispatch_func=None,
+        doc="",
+        namespace="wp::",
+        variadic=False,
+        initializer_list_func=None,
+        export=True,
+        group="Other",
+        hidden=False,
+        skip_replay=False,
+        missing_grad=False,
+        native_func=None,
+        defaults=None,
+        require_original_output_arg=False,
 ):
     """Main entry point to register a new built-in function.
 
@@ -1141,12 +1152,10 @@ def add_builtin(
 
     # wrap simple single-type functions with a value_func()
     if value_func is None:
-
         def value_func(arg_types, arg_values):
             return value_type
 
     if initializer_list_func is None:
-
         def initializer_list_func(args, return_type):
             return False
 
@@ -1691,10 +1700,12 @@ class ModuleExec:
         else:
             func = ctypes.CFUNCTYPE(None)
             forward = (
-                func(runtime.llvm.lookup(self.handle.encode("utf-8"), (name + "_cpu_forward").encode("utf-8"))) or None
+                    func(runtime.llvm.lookup(self.handle.encode("utf-8"),
+                                             (name + "_cpu_forward").encode("utf-8"))) or None
             )
             backward = (
-                func(runtime.llvm.lookup(self.handle.encode("utf-8"), (name + "_cpu_backward").encode("utf-8"))) or None
+                    func(runtime.llvm.lookup(self.handle.encode("utf-8"),
+                                             (name + "_cpu_backward").encode("utf-8"))) or None
             )
 
         hooks = KernelHooks(forward, backward)
@@ -1900,7 +1911,7 @@ class Module:
         module_dir = os.path.join(warp.config.kernel_cache_dir, f"{module_name}_{module_hash.hex()[:7]}")
 
         with warp.ScopedTimer(
-            f"Module {self.name} {module_hash.hex()[:7]} load on device '{device}'", active=not warp.config.quiet
+                f"Module {self.name} {module_hash.hex()[:7]} load on device '{device}'", active=not warp.config.quiet
         ) as module_load_timer:
             # -----------------------------------------------------------
             # determine output paths
@@ -1940,9 +1951,9 @@ class Module:
             # we always want to build if binary doesn't exist yet
             # and we want to rebuild if we are not caching kernels or if we are tracking array access
             if (
-                not os.path.exists(binary_path)
-                or not warp.config.cache_kernels
-                or warp.config.verify_autograd_array_access
+                    not os.path.exists(binary_path)
+                    or not warp.config.cache_kernels
+                    or warp.config.verify_autograd_array_access
             ):
                 builder = ModuleBuilder(self, self.options, hasher=self.hasher)
 
@@ -4356,12 +4367,12 @@ class RegisteredGLBuffer:
 
 
 def zeros(
-    shape: Tuple = None,
-    dtype=float,
-    device: Devicelike = None,
-    requires_grad: bool = False,
-    pinned: bool = False,
-    **kwargs,
+        shape: Tuple = None,
+        dtype=float,
+        device: Devicelike = None,
+        requires_grad: bool = False,
+        pinned: bool = False,
+        **kwargs,
 ) -> warp.array:
     """Return a zero-initialized array
 
@@ -4384,7 +4395,7 @@ def zeros(
 
 
 def zeros_like(
-    src: warp.array, device: Devicelike = None, requires_grad: bool = None, pinned: bool = None
+        src: warp.array, device: Devicelike = None, requires_grad: bool = None, pinned: bool = None
 ) -> warp.array:
     """Return a zero-initialized array with the same type and dimension of another array
 
@@ -4406,12 +4417,12 @@ def zeros_like(
 
 
 def ones(
-    shape: Tuple = None,
-    dtype=float,
-    device: Devicelike = None,
-    requires_grad: bool = False,
-    pinned: bool = False,
-    **kwargs,
+        shape: Tuple = None,
+        dtype=float,
+        device: Devicelike = None,
+        requires_grad: bool = False,
+        pinned: bool = False,
+        **kwargs,
 ) -> warp.array:
     """Return a one-initialized array
 
@@ -4430,7 +4441,7 @@ def ones(
 
 
 def ones_like(
-    src: warp.array, device: Devicelike = None, requires_grad: bool = None, pinned: bool = None
+        src: warp.array, device: Devicelike = None, requires_grad: bool = None, pinned: bool = None
 ) -> warp.array:
     """Return a one-initialized array with the same type and dimension of another array
 
@@ -4448,13 +4459,13 @@ def ones_like(
 
 
 def full(
-    shape: Tuple = None,
-    value=0,
-    dtype=Any,
-    device: Devicelike = None,
-    requires_grad: bool = False,
-    pinned: bool = False,
-    **kwargs,
+        shape: Tuple = None,
+        value=0,
+        dtype=Any,
+        device: Devicelike = None,
+        requires_grad: bool = False,
+        pinned: bool = False,
+        **kwargs,
 ) -> warp.array:
     """Return an array with all elements initialized to the given value
 
@@ -4514,7 +4525,7 @@ def full(
 
 
 def full_like(
-    src: warp.array, value: Any, device: Devicelike = None, requires_grad: bool = None, pinned: bool = None
+        src: warp.array, value: Any, device: Devicelike = None, requires_grad: bool = None, pinned: bool = None
 ) -> warp.array:
     """Return an array with all elements initialized to the given value with the same type and dimension of another array
 
@@ -4557,12 +4568,12 @@ def clone(src: warp.array, device: Devicelike = None, requires_grad: bool = None
 
 
 def empty(
-    shape: Tuple = None,
-    dtype=float,
-    device: Devicelike = None,
-    requires_grad: bool = False,
-    pinned: bool = False,
-    **kwargs,
+        shape: Tuple = None,
+        dtype=float,
+        device: Devicelike = None,
+        requires_grad: bool = False,
+        pinned: bool = False,
+        **kwargs,
 ) -> warp.array:
     """Returns an uninitialized array
 
@@ -4590,7 +4601,7 @@ def empty(
 
 
 def empty_like(
-    src: warp.array, device: Devicelike = None, requires_grad: bool = None, pinned: bool = None
+        src: warp.array, device: Devicelike = None, requires_grad: bool = None, pinned: bool = None
 ) -> warp.array:
     """Return an uninitialized array with the same type and dimension of another array
 
@@ -4624,11 +4635,11 @@ def empty_like(
 
 
 def from_numpy(
-    arr: np.ndarray,
-    dtype: Optional[type] = None,
-    shape: Optional[Sequence[int]] = None,
-    device: Optional[Devicelike] = None,
-    requires_grad: bool = False,
+        arr: np.ndarray,
+        dtype: Optional[type] = None,
+        shape: Optional[Sequence[int]] = None,
+        device: Optional[Devicelike] = None,
+        requires_grad: bool = False,
 ) -> warp.array:
     """Returns a Warp array created from a NumPy array.
 
@@ -4914,18 +4925,18 @@ class Launch:
 
 
 def launch(
-    kernel,
-    dim: Tuple[int],
-    inputs: Sequence = [],
-    outputs: Sequence = [],
-    adj_inputs: Sequence = [],
-    adj_outputs: Sequence = [],
-    device: Devicelike = None,
-    stream: Stream = None,
-    adjoint=False,
-    record_tape=True,
-    record_cmd=False,
-    max_blocks=0,
+        kernel,
+        dim: Tuple[int],
+        inputs: Sequence = [],
+        outputs: Sequence = [],
+        adj_inputs: Sequence = [],
+        adj_outputs: Sequence = [],
+        device: Devicelike = None,
+        stream: Stream = None,
+        adjoint=False,
+        record_tape=True,
+        record_cmd=False,
+        max_blocks=0,
 ):
     """Launch a Warp kernel on the target device
 
@@ -5202,7 +5213,7 @@ def force_load(device: Union[Device, str, List[Device], List[str]] = None, modul
 
 
 def load_module(
-    module: Union[Module, types.ModuleType, str] = None, device: Union[Device, str] = None, recursive: bool = False
+        module: Union[Module, types.ModuleType, str] = None, device: Union[Device, str] = None, recursive: bool = False
 ):
     """Force user-defined module to be compiled and loaded
 
@@ -5408,7 +5419,8 @@ def capture_launch(graph: Graph, stream: Stream = None):
 
 
 def copy(
-    dest: warp.array, src: warp.array, dest_offset: int = 0, src_offset: int = 0, count: int = 0, stream: Stream = None
+        dest: warp.array, src: warp.array, dest_offset: int = 0, src_offset: int = 0, count: int = 0,
+        stream: Stream = None
 ):
     """Copy array contents from `src` to `dest`.
 
@@ -5547,10 +5559,10 @@ def copy(
         # can't copy to/from fabric arrays of arrays, because they are jagged arrays of arbitrary lengths
         # TODO?
         if (
-            isinstance(src, (warp.fabricarray, warp.indexedfabricarray))
-            and src.ndim > 1
-            or isinstance(dest, (warp.fabricarray, warp.indexedfabricarray))
-            and dest.ndim > 1
+                isinstance(src, (warp.fabricarray, warp.indexedfabricarray))
+                and src.ndim > 1
+                or isinstance(dest, (warp.fabricarray, warp.indexedfabricarray))
+                and dest.ndim > 1
         ):
             raise RuntimeError("Copying to/from Fabric arrays of arrays is not supported")
 
@@ -5597,7 +5609,7 @@ def copy(
 
 
 def adj_copy(
-    adj_dest: warp.array, adj_src: warp.array, dest_offset: int, src_offset: int, count: int, stream: Stream = None
+        adj_dest: warp.array, adj_src: warp.array, dest_offset: int, src_offset: int, count: int, stream: Stream = None
 ):
     """Copy adjoint operation for wp.copy() calls on the tape.
 
