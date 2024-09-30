@@ -740,6 +740,8 @@ class Kernel:
         return f"{self.key}_{hash_suffix}"
 
     def get_hooks(self, device=None):
+        init()
+
         # if stream is specified, use the associated device
         device = runtime.get_device(device)
 
