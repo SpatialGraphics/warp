@@ -750,7 +750,7 @@ class Kernel:
         if not module_exec:
             return
 
-        return module_exec.get_kernel_hooks(self)
+        return module_exec.get_kernel_raw_hooks(self)
 
 
 # ----------------------
@@ -1714,6 +1714,27 @@ class ModuleExec:
         self.kernel_hooks[kernel] = hooks
 
         return hooks
+
+    # lookup and cache kernel entry points
+    def get_kernel_raw_hooks(self, kernel):
+        hooks = self.kernel_hooks.get(kernel)
+        if hooks is not None:
+            return hooks
+
+        name = kernel.get_mangled_name()
+
+        if self.device.is_cuda:
+            forward = runtime.core.cuda_get_kernel(
+                self.device.context, self.handle, (name + "_cuda_kernel_forward").encode("utf-8")
+            )
+            backward = runtime.core.cuda_get_kernel(
+                self.device.context, self.handle, (name + "_cuda_kernel_backward").encode("utf-8")
+            )
+        else:
+            forward = runtime.llvm.lookup(self.handle.encode("utf-8"), (name + "_cpu_forward").encode("utf-8"))
+            backward = runtime.llvm.lookup(self.handle.encode("utf-8"), (name + "_cpu_backward").encode("utf-8"))
+
+        return forward, backward
 
 
 # -----------------------------------------------------
