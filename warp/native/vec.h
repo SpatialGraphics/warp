@@ -18,9 +18,7 @@ struct vec_t
 {
     Type c[Length];
 
-    inline CUDA_CALLABLE vec_t()
-        : c()
-    {}
+    inline CUDA_CALLABLE vec_t() = default;
     
     inline CUDA_CALLABLE vec_t(Type s)
     {
