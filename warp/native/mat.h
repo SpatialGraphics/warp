@@ -194,6 +194,12 @@ struct mat_t
         }
     }
 
+    inline CUDA_CALLABLE vec_t<Cols, Type> operator[](int index) const { return get_row(index); }
+
+    CUDA_CALLABLE inline Type& operator()(int i, int j);
+
+    CUDA_CALLABLE inline const Type& operator()(int i, int j) const;
+
     // row major storage assumed to be compatible with PyTorch
     Type data[Rows][Cols];
 };
@@ -371,6 +377,16 @@ inline CUDA_CALLABLE Type* index(mat_t<Rows,Cols,Type>& m, int row, int col)
 #endif
 
     return &m.data[row][col];
+}
+
+template <unsigned Rows, unsigned Cols, typename Type>
+CUDA_CALLABLE inline Type& mat_t<Rows, Cols, Type>::operator()(int i, int j) {
+    return this->data[i][j];
+}
+
+template <unsigned Rows, unsigned Cols, typename Type>
+CUDA_CALLABLE inline const Type& mat_t<Rows, Cols, Type>::operator()(int i, int j) const {
+    return this->data[i][j];
 }
 
 template<unsigned Rows, unsigned Cols, typename Type>
